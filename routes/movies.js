@@ -3,13 +3,15 @@ const router = express.Router();
 const { Movie, validate } = require('../schemas/movie');
 const { Genre } = require('../schemas/genre');
 const debug = require('debug')('app:movies');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 /**
  * get all movies
  */
 
 router.get('/', async (req, res) => {
   try {
-    let movies = await Movie.find().select('-_v');
+    let movies = await Movie.find().select('-__v');
     return res.json(movies);
   } catch (error) {
     debug('Error Getting all movies');
@@ -22,7 +24,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    let movie = Movie.findById(req.params.id).select('-_v');
+    let movie = Movie.findById(req.params.id).select('-__v');
 
     if (!movie)
       return res
@@ -39,7 +41,7 @@ router.get('/:id', async (req, res) => {
 /**
  * create a new movie
  */
-router.post('/', async (req, res) => {
+router.post('/', [auth, admin], async (req, res) => {
   const { error } = validate(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
@@ -68,12 +70,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {});
-
 /**
  * delete a movie from database
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
   try {
     await Movie.findByIdAndDelete(req.params.id);
     return res.json({ message: 'Delete successfully' });

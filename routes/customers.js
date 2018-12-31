@@ -7,17 +7,16 @@ const {
   validateCustomer,
   validateUpdateCustomer
 } = require('../schemas/customer');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
 /**
  * get all custumers
  */
 router.get('/', async (req, res) => {
   try {
-    Customer.find()
-      .sort({ name: 1 })
-      .cursor()
-      .pipe(JSONStream.stringify())
-      .pipe(res.type('json'));
+    const customers = await Customer.find().sort({ name: 1 });
+    res.json(customers);
   } catch (err) {
     for (field in err.errors) {
       debug(err.errors[field].message);
@@ -29,7 +28,7 @@ router.get('/', async (req, res) => {
 /**
  * get a custumer by id
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
     if (!customer)
@@ -48,7 +47,7 @@ router.get('/:id', async (req, res) => {
 /**
  * create a new custumer object
  */
-router.post('/', async (req, res) => {
+router.post('/', [auth, admin], async (req, res) => {
   //validate object
   var { error } = validateCustomer(req.body);
 
@@ -73,7 +72,7 @@ router.post('/', async (req, res) => {
 /**
  * update a custumer object
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', [auth, admin], async (req, res) => {
   var { error } = validateUpdateCustomer(req.body);
 
   if (error) {
@@ -116,7 +115,7 @@ router.put('/:id', async (req, res) => {
 /**
  * delete a custumer
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
   try {
     await Customer.findByIdAndDelete(req.params.id);
     return res.json({

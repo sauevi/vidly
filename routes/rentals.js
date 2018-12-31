@@ -6,13 +6,15 @@ const { Customer } = require('../schemas/customer');
 const Fawn = require('fawn');
 const debug = require('debug')('app:rental');
 const mongoose = require('mongoose');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
 Fawn.init(mongoose);
 
 /**
  * create a new rental
  */
-router.post('/', async (req, res) => {
+router.post('/', [auth], async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
@@ -61,7 +63,7 @@ router.post('/', async (req, res) => {
 /**
  * get all rentals
  */
-router.get('/', async (req, res) => {
+router.get('/', [auth], async (req, res) => {
   try {
     let rentals = await Rental.find().sort('-dateOut');
     res.json(rentals);
