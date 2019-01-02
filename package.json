@@ -4,8 +4,8 @@
   "description": "server app for renting movies",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "debug": "NODE_ENV=development DEBUG=app:* nodemon app.js"
+    "start": "NODE_ENV=development DEBUG=app:startup node app.js",
+    "development": "NODE_ENV=development DEBUG=app:* nodemon app.js"
   },
   "author": "Saul Villamizar",
   "license": "ISC",
@@ -22,7 +22,8 @@
     "joi-objectid": "^2.0.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.4.1"
+    "mongoose": "^5.4.1",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "nodemon": "^1.18.9"

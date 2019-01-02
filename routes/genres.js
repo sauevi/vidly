@@ -1,79 +1,65 @@
 const express = require('express');
 const router = express.Router();
-const debug = require('debug')('app:genre');
 const { Genre, validateGenre } = require('../schemas/genre');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-
-var errors = [];
+const handler = require('../middleware/handler');
+const _ = require('lodash');
 /**
  * get all genres
  */
-router.get('/', async (req, res) => {
-  try {
-    let genres = await Genre.find().sort('name');
+router.get(
+  '/',
+  handler(async (req, res) => {
+    let genres = await Genre.find()
+      .sort('name')
+      .select('-__v');
     return res.send(genres);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      errors.push(err.errors[field].message);
-    }
-    return res.send(errors);
-  }
-});
+  })
+);
 /**
  * get genres by Id
  */
-router.get('/:id', async (req, res) => {
-  try {
-    let genre = await Genre.findById(req.params.id);
+router.get(
+  '/:id',
+  handler(async (req, res) => {
+    let genre = await Genre.findById(req.params.id).select('-__v');
     if (!genre)
       return res
         .status(404)
         .send(`Genre with id: ${req.params.id} doesn't exist`);
 
     return res.send(genre);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      errors.push(err.errors[field].message);
-    }
-    return res.send(errors);
-  }
-});
+  })
+);
 /**
  * create new genre
  */
-router.post('/', auth, async (req, res) => {
-  const { error } = validateGenre(req.body);
+router.post(
+  '/',
+  auth,
+  handler(async (req, res) => {
+    const { error } = validateGenre(req.body);
 
-  if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-  const genre = new Genre({
-    name: req.body.name
-  });
+    const genre = new Genre(_.pick(req.body, ['name']));
 
-  try {
     await genre.save();
-    return res.send(genre);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      errors.push(err.errors[field].message);
-    }
-    return res.send(errors);
-  }
-});
+    return res.json(_.pick(genre, ['_id', 'name']));
+  })
+);
 
 /**
  * update a genre
  */
-router.put('/:id', async (req, res) => {
-  const { error } = validateGenre(req.body);
+router.put(
+  '/:id',
+  handler(async (req, res) => {
+    const { error } = validateGenre(req.body);
 
-  if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-  try {
     let genre = await Genre.findByIdAndUpdate(
       req.params.id,
       {
@@ -84,31 +70,21 @@ router.put('/:id', async (req, res) => {
       {
         new: true
       }
-    );
-    return res.send(genre);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      errors.push(err.errors[field].message);
-    }
-    return res.send(errors);
-  }
-});
+    ).select('-__v');
+    return res.json(genre);
+  })
+);
 
 /**
  * delete a genre
  */
-router.delete('/:id', [auth, admin], async (req, res) => {
-  try {
+router.delete(
+  '/:id',
+  [auth, admin],
+  handler(async (req, res) => {
     await Genre.findByIdAndRemove(req.params.id);
-    return res.status(200).send('Successfull deleted');
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      errors.push(err.errors[field].message);
-    }
-    return res.send(errors);
-  }
-});
+    return res.status(200).json({ message: 'Successfull deleted' });
+  })
+);
 
 module.exports = router;

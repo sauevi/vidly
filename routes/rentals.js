@@ -4,21 +4,22 @@ const { Rental, validate } = require('../schemas/rental');
 const { Movie } = require('../schemas/movie');
 const { Customer } = require('../schemas/customer');
 const Fawn = require('fawn');
-const debug = require('debug')('app:rental');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-const admin = require('../middleware/admin');
+const handler = require('../middleware/handler');
 
 Fawn.init(mongoose);
 
 /**
  * create a new rental
  */
-router.post('/', [auth], async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+router.post(
+  '/',
+  [auth],
+  handler(async (req, res) => {
+    const { error } = validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-  try {
     const customer = await Customer.findById(req.body.customerId);
     if (!customer) return res.status(400).json({ error: 'Invalid customer.' });
 
@@ -39,7 +40,7 @@ router.post('/', [auth], async (req, res) => {
         title: movie.title,
         dailyRentalRate: movie.dailyRentalRate
       }
-    });
+    }).select('-__v');
 
     //using a transaction
     new Fawn.Task()
@@ -54,24 +55,21 @@ router.post('/', [auth], async (req, res) => {
       .run();
 
     return res.json(rental);
-  } catch (error) {
-    debug('Error posting a new rental', error);
-    return res.status(500).json({ error: 'internal server error' });
-  }
-});
+  })
+);
 
 /**
  * get all rentals
  */
-router.get('/', [auth], async (req, res) => {
-  try {
-    let rentals = await Rental.find().sort('-dateOut');
+router.get(
+  '/',
+  [auth],
+  handler(async (req, res) => {
+    let rentals = await Rental.find()
+      .sort('-dateOut')
+      .select('-__v');
     res.json(rentals);
-  } catch (error) {
-    return res.status(500).json({
-      message: 'Internal Server Error...'
-    });
-  }
-});
+  })
+);
 
 module.exports = router;

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const debug = require('debug')('app:customers');
-const JSONStream = require('JSONStream');
 const {
   Customer,
   validateCustomer,
@@ -9,86 +8,77 @@ const {
 } = require('../schemas/customer');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-
+const handler = require('../middleware/handler');
+const _ = require('lodash');
 /**
  * get all custumers
  */
-router.get('/', async (req, res) => {
-  try {
+router.get(
+  '/',
+  handler(async (req, res) => {
     const customers = await Customer.find().sort({ name: 1 });
-    res.json(customers);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      return res.json(err.errors[field].message);
-    }
-  }
-});
+    res.json(_.pick(customers, ['_id', 'name', 'phone', 'isGold']));
+  })
+);
 
 /**
  * get a custumer by id
  */
-router.get('/:id', auth, async (req, res) => {
-  try {
+router.get(
+  '/:id',
+  auth,
+  handler(async (req, res) => {
     let customer = await Customer.findById(req.params.id);
     if (!customer)
       return res
         .status(404)
         .json(`customer with id: ${req.params.id}, not found`);
 
-    res.json(customer);
-  } catch (error) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      return res.json(err.errors[field].message);
-    }
-  }
-});
+    res.json(_.pick(customers, ['_id', 'name', 'phone', 'isGold']));
+  })
+);
 /**
  * create a new custumer object
  */
-router.post('/', [auth, admin], async (req, res) => {
-  //validate object
-  var { error } = validateCustomer(req.body);
+router.post(
+  '/',
+  [auth, admin],
+  handler(async (req, res) => {
+    //validate object
+    var { error } = validateCustomer(req.body);
 
-  if (error) return res.status(400).json(error.details[0].message);
+    if (error) return res.status(400).json(error.details[0].message);
 
-  try {
-    const customer = new Customer({
-      name: req.body.name,
-      phone: req.body.phone,
-      isGold: req.body.isGold
-    });
+    const customer = new Customer(
+      _.pick(req.body, ['name', 'phone', 'isGold'])
+    );
 
     await customer.save();
-    return res.json(customer);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      return res.json(err.errors[field].message);
-    }
-  }
-});
+    return res.json(_.pick(customers, ['_id', 'name', 'phone', 'isGold']));
+  })
+);
 /**
  * update a custumer object
  */
-router.put('/:id', [auth, admin], async (req, res) => {
-  var { error } = validateUpdateCustomer(req.body);
+router.put(
+  '/:id',
+  [auth, admin],
+  handler(async (req, res) => {
+    var { error } = validateUpdateCustomer(req.body);
 
-  if (error) {
-    for (field in error.details) {
-      debug(error.details[field].message);
-      return res.json(error.details[field].message);
+    if (error) {
+      for (field in error.details) {
+        debug(error.details[field].message);
+        return res.json(error.details[field].message);
+      }
     }
-  }
 
-  var customerUpdt = {};
+    var customerUpdt = {};
 
-  if (req.body.name) customerUpdt.name = req.body.name;
-  if (req.body.isGold) customerUpdt.isGold = req.body.isGold;
-  if (req.body.phone) customerUpdt.phone = req.body.phone;
+    if (req.body.name) customerUpdt.name = req.body.name;
+    if (req.body.isGold) customerUpdt.isGold = req.body.isGold;
+    if (req.body.phone) customerUpdt.phone = req.body.phone;
 
-  try {
     let updatedCustomer = await Customer.findByIdAndUpdate(
       req.params.id,
       {
@@ -97,7 +87,7 @@ router.put('/:id', [auth, admin], async (req, res) => {
       {
         new: true
       }
-    );
+    ).select('-__v');
 
     if (!updatedCustomer)
       return res
@@ -105,25 +95,20 @@ router.put('/:id', [auth, admin], async (req, res) => {
         .json({ message: `customer with id ${req.params.id} not found` });
 
     return res.json(updatedCustomer);
-  } catch (err) {
-    for (field in err.errors) {
-      debug(err.errors[field].message);
-      return res.json(err.errors[field].message);
-    }
-  }
-});
+  })
+);
 /**
  * delete a custumer
  */
-router.delete('/:id', [auth, admin], async (req, res) => {
-  try {
+router.delete(
+  '/:id',
+  [auth, admin],
+  handler(async (req, res) => {
     await Customer.findByIdAndDelete(req.params.id);
     return res.json({
       message: 'delete successfully'
     });
-  } catch (error) {
-    return res.json(error.errors.message);
-  }
-});
+  })
+);
 
 module.exports = router;
