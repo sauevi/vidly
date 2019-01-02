@@ -1,5 +1,5 @@
 const winston = require('winston');
-const debug = require('debug')('app:ERROR');
+const logger = require('debug')('app:ERROR');
 /*
   winston has the followin levels: 
     error
@@ -10,7 +10,7 @@ const debug = require('debug')('app:ERROR');
     silly
   */
 module.exports = function(err, req, res, next) {
-  debug(err);
-  winston.error(err.message, err);
+  logger(err.message);
+  winston.error(err.stack);
   return res.status(500).json({ error: 'Internal server error' });
 };

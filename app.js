@@ -8,17 +8,17 @@ const auth = require('./routes/auth');
 const error = require('./middleware/error');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const debug = require('debug')('app:startup');
+const logger = require('debug')('app:startup');
 const mongoose = require('mongoose');
 const config = require('config');
 const Joi = require('joi');
 const winston = require('winston');
 Joi.objectId = require('joi-objectid')(Joi);
 
-winston.add(new winston.transports.File({ filename: 'vidly.log' }));
+winston.add(new winston.transports.File({ filename: 'logs/vidly.log' }));
 
 if (!config.get('jwtPrivateKey')) {
-  debug('FATAL ERROR: jwtPrivateKey is not defined.');
+  logger('FATAL ERROR: jwtPrivateKey is not defined.');
   process.exit(1);
 }
 // set port port
@@ -48,7 +48,7 @@ mongoose
   )
   .then(() => {
     app.listen(port, () =>
-      debug(`Successfull Conected to MongoDB, App started on port: ${port}`)
+      logger(`Successfull Conected to MongoDB, App started on port: ${port}`)
     );
   })
-  .catch(err => debug('Could not connect to MongoDb..', err));
+  .catch(err => logger('Could not connect to MongoDb..', err));
