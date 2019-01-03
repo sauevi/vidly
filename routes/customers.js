@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const debug = require('debug')('app:customers');
 const {
   Customer,
   validateCustomer,
@@ -68,7 +67,6 @@ router.put(
 
     if (error) {
       for (field in error.details) {
-        debug(error.details[field].message);
         return res.json(error.details[field].message);
       }
     }
