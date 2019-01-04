@@ -5,7 +5,7 @@ const genreSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minlength: 4,
+    minlength: 5,
     maxlength: 10
   },
   createdOn: {
@@ -20,7 +20,7 @@ const genreSchema = new mongoose.Schema({
 function validateGenre(genre) {
   const genreSchema = Joi.object().keys({
     name: Joi.string()
-      .min(4)
+      .min(5)
       .max(10)
       .required()
   });

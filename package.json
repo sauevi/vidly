@@ -4,8 +4,9 @@
   "description": "server app for renting movies",
   "main": "app.js",
   "scripts": {
-    "start": "NODE_ENV=development DEBUG=app:startup node app.js",
-    "dev": "NODE_ENV=development DEBUG=app:* nodemon app.js"
+    "start": "NODE_ENV=development node app.js",
+    "dev": "NODE_ENV=development nodemon app.js",
+    "test": "jest --watchAll --verbose --coverage"
   },
   "author": "Saul Villamizar",
   "license": "ISC",
@@ -14,7 +15,6 @@
     "bcrypt": "^3.0.3",
     "body-parser": "^1.18.3",
     "config": "^3.0.1",
-    "debug": "^4.1.1",
     "express": "^4.16.4",
     "fawn": "^2.1.5",
     "helmet": "^3.15.0",
@@ -22,10 +22,12 @@
     "joi-objectid": "^2.0.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.4.1",
+    "mongoose": "^5.4.2",
     "winston": "^3.1.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.9"
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.9",
+    "supertest": "^3.3.0"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "jwtPrivateKey": "1234",
+  "db": {
+    "host": "mongodb://localhost/vidly_test"
+  },
+  "port": "3000"
+}

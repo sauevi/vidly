@@ -6,10 +6,11 @@ const config = require('config');
 module.exports = function(req, res, next) {
   const token = req.header('x-auth-token');
 
-  if (!token)
+  if (!token) {
     return res
       .status(401)
       .json({ message: 'Access denied. No token provided' });
+  }
 
   try {
     const decode = jwt.verify(token, config.get('jwtPrivateKey'));
