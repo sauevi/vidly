@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const handler = require('../middleware/handler');
 const _ = require('lodash');
+const validateObjectId = require('../middleware/validateObjectId');
 /**
  * get all movies
  */
@@ -23,6 +24,7 @@ router.get(
  */
 router.get(
   '/:id',
+  validateObjectId,
   handler(async (req, res) => {
     let movie = Movie.findById(req.params.id).select('-__v');
 
@@ -74,7 +76,7 @@ router.post(
  */
 router.delete(
   '/:id',
-  [auth, admin],
+  [validateObjectId, auth, admin],
   handler(async (req, res) => {
     await Movie.findByIdAndDelete(req.params.id);
     return res.json({ message: 'Delete successfully' });

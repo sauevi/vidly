@@ -4,6 +4,7 @@ const movies = require('../routes/movies');
 const rental = require('../routes/rentals');
 const users = require('../routes/users');
 const auth = require('../routes/auth');
+const returns = require('../routes/returns');
 const error = require('../middleware/error');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -20,6 +21,7 @@ module.exports = function(app) {
   app.use('/api/movies', movies);
   app.use('/api/rentals', rental);
   app.use('/api/users', users);
+  app.use('/api/returns', returns);
   app.use('/api/auth', auth);
   // manage errors
   app.use(error);

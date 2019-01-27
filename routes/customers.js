@@ -9,6 +9,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const handler = require('../middleware/handler');
 const _ = require('lodash');
+const validateObjectId = require('../middleware/validateObjectId');
 /**
  * get all custumers
  */
@@ -25,7 +26,7 @@ router.get(
  */
 router.get(
   '/:id',
-  auth,
+  [validateObjectId, auth],
   handler(async (req, res) => {
     let customer = await Customer.findById(req.params.id);
     if (!customer)
@@ -61,7 +62,7 @@ router.post(
  */
 router.put(
   '/:id',
-  [auth, admin],
+  [validateObjectId, auth, admin],
   handler(async (req, res) => {
     var { error } = validateUpdateCustomer(req.body);
 
@@ -100,7 +101,7 @@ router.put(
  */
 router.delete(
   '/:id',
-  [auth, admin],
+  [validateObjectId, auth, admin],
   handler(async (req, res) => {
     await Customer.findByIdAndDelete(req.params.id);
     return res.json({
