@@ -4,13 +4,13 @@ const Joi = require('joi');
 const winston = require('winston');
 Joi.objectId = require('joi-objectid')(Joi);
 // set port
-const port = config.get('port') || 3000;
+const port = process.env.PORT || 3000;
 // init app
 const app = express();
 // load modules
 require('./startup/logger')();
 require('./startup/routes')(app);
-require('./startup/db')(config.get('db.host'));
+require('./startup/db')(config.get('db'));
 require('./startup/config')(config);
 require('./startup/prod')(app);
 

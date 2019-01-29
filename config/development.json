@@ -1,6 +1,0 @@
-{
-  "db": {
-    "host": "mongodb://localhost/vidly"
-  },
-  "port": "5000"
-}
