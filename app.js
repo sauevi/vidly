@@ -12,6 +12,7 @@ require('./startup/logger')();
 require('./startup/routes')(app);
 require('./startup/db')(config.get('db.host'));
 require('./startup/config')(config);
+require('./startup/prod')(app);
 
 const server = app.listen(port, () =>
   winston.info(`App started on port: ${port}`)
